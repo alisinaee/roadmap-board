@@ -11,7 +11,7 @@ import threading
 from roadmap import log as rlog
 from roadmap.errors import EXIT_CONFLICT, EXIT_USAGE, RoadmapError, stub
 from roadmap.http import server as http_server
-from roadmap.services import launchd, loader, usage
+from roadmap.services import launchd, loader, usage, usage_accounts
 from roadmap.store import config as config_store
 from roadmap.store import paths
 
@@ -62,6 +62,9 @@ def run(args):
     stop_usage = threading.Event()
     if not args.no_usage_loop:
         threading.Thread(target=usage.run_loop, args=(stop_usage,), name="usage-loop", daemon=True).start()
+        # One background warm-up of the active account's identity (in memory only), so the full e-mail is back
+        # after a restart without a manual Check. Runs off the request path; never delays serving.
+        threading.Thread(target=usage_accounts.warm_identity, name="account-warmup", daemon=True).start()
 
     if getattr(args, "json", False):
         print(json.dumps({"ok": True, "data": {"port": bound, "url": url, "usage_loop": not args.no_usage_loop}}),

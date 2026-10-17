@@ -338,6 +338,17 @@ def check(account_id=None, runner=None, cfg=None, now=None):
     return _row(account, cfg, _read_state()["accounts"].get(account["id"]) or {}, full_email=True, now=now)
 
 
+def warm_identity():
+    """Run check() once for the active account so the full e-mail is in memory after a restart, as if a person had
+    clicked Check. Meant for a background thread at startup; it never raises, and the e-mail stays in memory only."""
+    try:
+        check()
+    except RoadmapError as exc:
+        log.warning("startup account check skipped: %s", exc.message)
+    except Exception as exc:
+        log.warning("startup account check skipped: unexpected %s", type(exc).__name__)
+
+
 # ---------------------------------------------------------------- list / status
 
 def _age_s(text, now):

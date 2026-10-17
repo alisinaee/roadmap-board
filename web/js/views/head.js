@@ -306,6 +306,25 @@ function ruleStateHtml(row) {
   return " " + chipHtml(row.ruleState, RULE_STATE_TONE[row.ruleState] || "neutral");
 }
 
+// One history line as text. The route sends objects ({ts, by, set|link|note}); a plain string passes through.
+function historyLine(h) {
+  if (typeof h === "string") return h;
+  if (!h || typeof h !== "object") return "";
+  const parts = [];
+  const when = whenText(h.ts, true);
+  if (when) parts.push(when);
+  if (h.by) parts.push(String(h.by));
+  for (const key of ["set", "link", "note"]) {
+    if (h[key]) parts.push(key + " " + (typeof h[key] === "object" ? JSON.stringify(h[key]) : String(h[key])));
+  }
+  return parts.join(" ");
+}
+
+// The whole history of a row as one line, lines joined with a dot.
+function historyText(list) {
+  return (Array.isArray(list) ? list : []).map(historyLine).filter(Boolean).join(" · ");
+}
+
 // The text, history, reply and attachments of one row, as the view keeps them (the text is null on the phone).
 function normFull(f) {
   return { text: typeof f.text === "string" ? f.text : null, history: Array.isArray(f.history) ? f.history : [],
@@ -462,7 +481,7 @@ function panelHtml(vm, row, opts, open) {
   const eid = esc(id);
   const pid = opts.project || null;
   const full = fullOf(vm, pid, id);
-  const hist = full && full.history.length ? full.history.join(" · ") : "";
+  const hist = full ? historyText(full.history) : "";
   const wrote = '<div class="hd-blk"><p class="hd-lbl">You wrote</p>' +
     '<pre class="hd-text" data-state="' + (full ? "ready" : "loading") + '">' + esc(textNote(full)) + "</pre>" +
     assetsHtml(full) + "</div>";
@@ -762,7 +781,7 @@ function loadText(item) {
   const show = function (entry) {
     pre.textContent = textNote(entry);
     pre.setAttribute("data-state", entry.text == null ? "none" : "ready");
-    if (hist) hist.textContent = (entry.history || []).join(" · ");
+    if (hist) hist.textContent = historyText(entry.history);
     const reply = item.querySelector(".hd-reply");
     if (reply) reply.textContent = replyNote(entry);
     const rowText = replyText(entry);

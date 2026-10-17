@@ -5,6 +5,7 @@
 
 import { getJson, postJson } from "../api.js";
 import { esc } from "../dom.js";
+import { refButtonHtml } from "../ref.js";
 import { MISSING } from "../format.js";
 import { donut, fmtN, hBars, lineChart, shareBar, stackedBars, tableHtml } from "./tokens_charts.js";
 
@@ -377,7 +378,12 @@ function xTicks(slots) {
 // action connect | disconnect | switch | check | login (login opens Terminal; the person finishes it in the browser).
 // Login and logout run the existing CLI flow; the page never sees a password or token. E-mails are masked on the
 // phone listener only (it may be reached over a tunnel); the main listener shows the full address.
-const acct = { data: null, at: 0, loading: false, error: false, busy: "", note: "", adding: false, advanced: false };
+const ACCT_LOGIN_NOTE = "Added nothing yet: run this in a terminal, then click Add again:";
+const acct = {
+  data: null, at: 0, loading: false, error: false,
+  busy: "", note: "", loginCmd: "",
+  adding: false, advanced: false,
+};
 
 function loadAccounts() {
   if (acct.loading || typeof fetch === "undefined") return;
@@ -456,7 +462,14 @@ export function acctPanelHtml() {
   }).join("");
   return '<ul class="spend-list tk-acct-list" aria-label="Claude accounts">' + head + rows + "</ul>" +
     acctAddForm() +
-    '<p class="page-note" role="status">' + esc(acct.note || acct.data.note || "") + "</p>";
+    '<p class="page-note" role="status">' + acctNoteHtml(acct.note || acct.data.note || "") + "</p>";
+}
+
+// The login hint gets a Copy button (the shared copy-ref action) next to its command; other notes are plain text.
+function acctNoteHtml(note) {
+  if (note !== ACCT_LOGIN_NOTE || !acct.loginCmd) return esc(note);
+  return esc(note) + " <code>" + esc(acct.loginCmd) + "</code> " +
+    refButtonHtml(acct.loginCmd, "login command", "");
 }
 
 function acctSlug(label) {
@@ -502,8 +515,8 @@ function acctAdd(form) {
     }).catch(function (err) {
       const msg = err && err.message ? err.message : "add";
       if (!acct.advanced && source === "config-dir" && /does not exist/.test(msg)) {
-        acct.note = "Added nothing yet: run this in a terminal, then click Add again: " +
-          "CLAUDE_CONFIG_DIR=" + path + " claude auth login";
+        acct.note = ACCT_LOGIN_NOTE;
+        acct.loginCmd = "CLAUDE_CONFIG_DIR=" + path + " claude auth login";
       } else {
         acct.note = "Failed: " + msg;
       }

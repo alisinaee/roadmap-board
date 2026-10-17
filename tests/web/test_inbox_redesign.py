@@ -49,13 +49,13 @@ console.log(JSON.stringify({
     return html.indexOf(t) >= 0;
   }),
   rowGrid: (html.match(/class="row-grid rg-fin ib-row"/g) || []).length,
-  roleButtons: (html.match(/role="button" tabindex="0"/g) || []).length,
-  collapsed: (html.match(/class="rg-main ib-main"[^>]*aria-expanded="false"/g) || []).length,
+  roleButtons: (html.match(/class="ib-hit"/g) || []).length,
+  collapsed: (html.match(/class="ib-hit"[^>]*aria-expanded="false"/g) || []).length,
   bodiesHidden: (html.match(/class="ib-body" id="[^"]+" hidden>/g) || []).length,
-  questionsOpen: (html.match(/class="rg-main ib-main"[^>]*aria-expanded="true"/g) || []).length,
+  questionsOpen: (html.match(/class="ib-hit"[^>]*aria-expanded="true"/g) || []).length,
   rowHasProject: row.indexOf('class="chip ib-task"') >= 0,
   rowHasAge: /rg-num qc-foot">2m</.test(row),
-  rowHasAction: row.indexOf('class="btn btn-ghost ib-expand"') >= 0,
+  rowHasAction: row.indexOf('class="ib-c ib-chev"') >= 0,
   bodyOptionsVertical: row.indexOf('class="nz-list ib-opts" role="group"') >= 0 && row.indexOf("safer") >= 0,
   bodyOther: row.indexOf('data-form="inbox-question-answer"') >= 0,
   ruleAction: html.indexOf('data-action="rule-accept" data-project="alpha" data-id="RP1"') >= 0,
@@ -114,9 +114,11 @@ class InboxRedesignSource(unittest.TestCase):
         self.src = read(INBOX)
 
     def test_keys_j_k_enter_esc_and_digits(self):
+        # Enter/Space on a row is no longer handled in JS: the row's hit target (ib-hit) is a real <button>, so the
+        # browser activates it natively on Enter or Space, the same way Head's own row toggle (.hd-hit) does.
         self.assertIn('bindKey("j", moveFocus(1));', self.src)
         self.assertIn('bindKey("k", moveFocus(-1));', self.src)
-        self.assertIn('event.key === "Enter"', self.src)
+        self.assertIn('class="ib-hit"', self.src)
         self.assertIn('event.key === "Escape"', self.src)
         self.assertIn("for (let n = 1; n <= KEY_MAX; n++) bindKey(String(n), onDigit(n - 1));", self.src)
 
@@ -155,7 +157,7 @@ class InboxUxPass(unittest.TestCase):
 
     def test_expand_glyph_is_centred_and_turns_when_open(self):
         self.assertRegex(self.css, r"\.ib-row > \.btn \{[^}]*display: grid; place-items: center")
-        self.assertRegex(self.css, r"\.ib-item\.is-open \.ib-expand \{ transform: rotate\(90deg\)")
+        self.assertRegex(self.css, r"\.ib-item\.is-open \.ib-chev \{ transform: rotate\(90deg\)")
 
     def test_copy_button_stays_on_the_id_line(self):
         self.assertRegex(self.css, r"\.ib-body \.qc-line \{ display: flex")
@@ -166,7 +168,7 @@ class InboxUxPass(unittest.TestCase):
         self.assertRegex(self.css, r"\.qc-opt\.is-default \{ background: var\(--surface-2\)")
 
     def test_reduced_motion_stops_the_turn(self):
-        self.assertIn("@media (prefers-reduced-motion: reduce) { .ib-expand { transition: none } }", self.css)
+        self.assertIn("@media (prefers-reduced-motion: reduce) { .ib-chev { transition: none } }", self.css)
 
 
 if __name__ == "__main__":

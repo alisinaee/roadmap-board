@@ -318,13 +318,11 @@ function chipOf(item) {
   return chipHtml("blocker", TONE.blocker);
 }
 
-// The one action of a row, in the fixed action column: expand (question, Head ask), Accept (rule), open the task.
-function actionHtml(item, bid, open) {
-  const dataExpanded = ' aria-expanded="' + (open ? "true" : "false") + '"';
+// The one action of a row, in the fixed action column: a plain chevron for question/Head ask (the row itself is the
+// hit target, see ib-hit below), Accept (rule), open the task.
+function actionHtml(item) {
   if (item.kind === "question" || item.kind === "ask") {
-    const what = item.kind === "question" ? "Answer " : "Reply to ";
-    return '<button type="button" class="btn btn-ghost ib-expand"' + dataExpanded + ' aria-controls="' + bid +
-      '" aria-label="' + esc(what + item.id) + '">›</button>';
+    return '<span class="ib-c ib-chev" aria-hidden="true">›</span>';
   }
   if (item.kind === "rule") {
     return '<button type="button" class="btn" data-action="rule-accept" data-project="' + esc(item.pid) +
@@ -416,14 +414,20 @@ function itemHtml(item, now, open, showProject) {
   const task = tid ? '<a class="chip ib-task" href="' + esc(itemHash(item.pid, tid)) + '" aria-label="' +
     esc("View task " + tid) + '">' + esc(tid) + "</a>" : "<span></span>";
   const proj = showProject ? ' <span class="qc-foot">' + esc(item.pname) + "</span>" : "";
+  // The whole row is the hit target (ib-hit), styled invisible/full-row like Head's row toggle (.hd-hit in
+  // web/css/head.css): an absolutely positioned button under the row's text, so a click or Enter/Space anywhere on
+  // the row expands or collapses it, while real links/buttons in the row (copy, task link, accept/open) sit above it
+  // (z-index) and still get their own clicks.
+  const hit = '<button type="button" class="ib-hit" aria-controls="' + bid + '" aria-expanded="' +
+    (open ? "true" : "false") + '" data-focus="ib-' + esc(dk) + '" aria-label="' +
+    esc((open ? "Hide " : "Show ") + item.id) + '"></button>';
   return '<li class="ib-item' + (open ? " is-open" : "") + (isOld(item.at, now) ? " is-old" : "") +
     '" data-key="' + esc(item.key) + '">' +
-    '<div class="row-grid rg-fin ib-row"><span class="ib-kind">' + chipOf(item) + "</span>" +
-    '<span class="rg-main ib-main" role="button" tabindex="0" aria-controls="' + bid + '" aria-expanded="' +
-    (open ? "true" : "false") + '" data-focus="ib-' + esc(dk) + '" title="' + esc(item.title) + '">' +
+    '<div class="row-grid rg-fin ib-row">' + hit + '<span class="ib-kind">' + chipOf(item) + "</span>" +
+    '<span class="rg-main ib-main" title="' + esc(item.title) + '">' +
     '<span class="rg-t"><span class="qc-id">' + esc(item.id) + "</span> " + esc(item.title) + proj + "</span></span>" +
     task + '<span class="rg-num qc-foot">' + esc(ageText(item.at, now)) + "</span>" + copyOf(item) +
-    actionHtml(item, bid, open) + '</div><div class="ib-body" id="' + bid + '"' + (open ? "" : " hidden") + ">" +
+    actionHtml(item) + '</div><div class="ib-body" id="' + bid + '"' + (open ? "" : " hidden") + ">" +
     body + "</div></li>";
 }
 
@@ -572,8 +576,8 @@ function leaveItem(el, text) {
   const fresh = swapNode(item, parseOne('<li class="qc is-answered ib-item" role="status"><p class="qc-line">' +
     esc(text) + "</p></li>"));
   if (hadFocus && next && next.querySelector) {
-    const main = next.querySelector(".ib-main");
-    if (main) main.focus();
+    const hit = next.querySelector(".ib-hit");
+    if (hit) hit.focus();
   }
   window.setTimeout(function () {
     if (fresh.parentNode) fresh.parentNode.removeChild(fresh);
@@ -658,11 +662,11 @@ function onLetter(index) {
 function moveFocus(step) {
   return function () {
     if (currentRoute().section !== "inbox") return;
-    const rows = Array.from(document.querySelectorAll("#main .ib-item .ib-main"));
+    const rows = Array.from(document.querySelectorAll("#main .ib-item .ib-hit"));
     if (!rows.length) return;
     const active = document.activeElement;
     const own = active && active.closest ? active.closest(".ib-item") : null;
-    const at = own ? rows.indexOf(own.querySelector(".ib-main")) : -1;
+    const at = own ? rows.indexOf(own.querySelector(".ib-hit")) : -1;
     let next;
     if (at < 0) next = step > 0 ? 0 : rows.length - 1;
     else next = Math.min(rows.length - 1, Math.max(0, at + step));
@@ -670,24 +674,21 @@ function moveFocus(step) {
   };
 }
 
-// Clicks on the page: a filter button, the Answer or Reply button, and a click on a row (not on its action).
+// Clicks on the page: a filter button, the Answer or Reply button, and a click on the row's full-row hit button
+// (ib-hit, see itemHtml). Real links/buttons in the row sit above ib-hit (CSS z-index), so they get their own click
+// and never also toggle the row.
 function onPageClick(event) {
   const t = event.target;
   if (!t || !t.closest) return;
-  const expand = t.closest(".ib-expand");
-  if (expand && expand.closest("#main")) {
-    const item = expand.closest(".ib-item");
-    setOpen(item, !item.classList.contains("is-open"));
-    return;
-  }
-  const row = t.closest(".ib-row");
-  if (row && row.closest("#main") && !t.closest("button, a, input, select, textarea, form")) {
-    const item = row.closest(".ib-item");
+  const hit = t.closest(".ib-hit");
+  if (hit && hit.closest("#main")) {
+    const item = hit.closest(".ib-item");
     setOpen(item, !item.classList.contains("is-open"));
   }
 }
 
-// Enter opens the focused row; Esc closes the open row that holds focus (also from its text box).
+// Esc closes the open row that holds focus (also from its text box). Enter/Space on the row's own hit button already
+// toggles it natively, since ib-hit is a real button element, so only Esc needs handling here.
 function onPageKey(event) {
   if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey) return;
   const t = event.target;
@@ -696,13 +697,8 @@ function onPageKey(event) {
   if (event.key === "Escape" && item.classList.contains("is-open")) {
     event.preventDefault();
     setOpen(item, false);
-    const main = item.querySelector(".ib-main");
-    if (main) main.focus();
-    return;
-  }
-  if (event.key === "Enter" && t.classList.contains("ib-main")) {
-    event.preventDefault();
-    setOpen(item, !item.classList.contains("is-open"));
+    const hit = item.querySelector(".ib-hit");
+    if (hit) hit.focus();
   }
 }
 

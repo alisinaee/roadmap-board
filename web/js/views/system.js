@@ -87,6 +87,11 @@ function readPref(key, dflt) {
 const SP_STEP = 0.2;
 const SP_STEP_BIG = 0.5;
 let keepCentre = null;
+// Set alongside keepCentre when a selection (not a manual zoom/pan) asked for the anchor, so mountNow applies it
+// even while auto-fit is still on (R11.152: opening/closing the side panel must not move the selected node).
+let anchorSelect = false;
+// The zoom level to anchor at when `view` has never been set (auto-fit only, no manual pan/zoom yet).
+let pinnedK = null;
 
 function spaceKey() {
   return "rb.sys.space." + current + (current === "flows" || DIAGRAMS[current] ? "." + (flowId || "") : "");
@@ -583,8 +588,9 @@ export function bodyHtml(pid, got) {
   const leg = st.legend ? '<span class="sys-ov sys-ov-bl" role="group" aria-label="Legend">' + st.legend +
     "</span>" : "";
   return tb.bar + crumbsHtml() + (head ? '<div class="wfg-bar">' + head + "</div>" : "") +
-    '<div class="sys-box">' + tb.acts + tb.tools + (st.svg ? '<div class="wfg-stage sys-canvas">' + st.svg + "</div>" :
-    st.html) + leg + "</div>" + (st.panel || "");
+    '<div class="sys-row">' + '<div class="sys-box">' + tb.acts + tb.tools +
+    (st.svg ? '<div class="wfg-stage sys-canvas">' + st.svg + "</div>" : st.html) + leg + "</div>" +
+    (st.panel || "") + "</div>";
 }
 
 // Breadcrumb of drill levels: the view, then each opened group; the last is the current level.
@@ -652,16 +658,42 @@ function arch() {
 function select(id) {
   selected = id && selected !== id ? id : null;
   const a = arch();
+  let switched = false;
   if (selected && selected !== "sys" && a && current !== "flows" &&
     !viewOf(a, current).nodes.some((n) => n.id === selected)) {
     const other = ["components", "modules", "containers", "data", "context", "layers"].find((k) =>
       viewOf(a, k).nodes.some((n) => n.id === selected));
-    if (other) setView(other);
+    if (other) {
+      setView(other);
+      switched = true;
+    }
   }
+  // Opening or closing the side panel can shrink the canvas; anchor on the tapped node (or, when clearing, on the
+  // current view centre) so the redraw below never leaves it hidden under the panel or re-fit somewhere else.
+  if (!switched) anchorSelection(selected, a);
   if (typeof document !== "undefined" && lastVm) {
     document.dispatchEvent(new CustomEvent("system:select", { detail: { pid: lastVm.route.id, id: selected } }));
   }
   redraw();
+}
+
+function anchorSelection(id, a) {
+  const svg = typeof document !== "undefined" ? svgEl() : null;
+  if (!svg || !svg.getBoundingClientRect) return;
+  const w = Number(svg.getAttribute("data-w")) || 1;
+  const h = Number(svg.getAttribute("data-h")) || 1;
+  const r = svg.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  const node = id && a && current !== "flows" ? viewOf(a, current).nodes.find((n) => n.id === id) : null;
+  if (node) {
+    keepCentre = { fx: (node.x + node.w / 2) / w, fy: (node.y + node.h / 2) / h };
+  } else if (view) {
+    keepCentre = { fx: ((r.width / 2 - view.x) / view.k) / w, fy: ((r.height / 2 - view.y) / view.k) / h };
+  } else {
+    keepCentre = { fx: 0.5, fy: 0.5 };
+  }
+  pinnedK = view ? view.k : openingView({ w: w, h: h }, { w: r.width, h: r.height }, overlayInset(svg, r)).k;
+  anchorSelect = true;
 }
 
 function setView(id) {
@@ -732,13 +764,18 @@ function mountNow() {
     view = { k: view.k, x: view.x - pendingShift.dx * view.k, y: view.y - pendingShift.dy * view.k };
   }
   pendingShift = null;
-  if (keepCentre && !auto && view) {
-    view = { k: view.k, x: size.w / 2 - keepCentre.fx * box.w * view.k,
-      y: size.h / 2 - keepCentre.fy * box.h * view.k };
+  // A selection (anchorSelect) applies even while auto-fit is still on: the canvas may have just shrunk or grown
+  // because the side panel opened or closed, and the tapped node (or prior view centre) must stay put either way.
+  if (keepCentre) {
+    const k = view ? view.k : pinnedK || openingView(box, size, inset).k;
+    view = { k: k, x: size.w / 2 - keepCentre.fx * box.w * k, y: size.h / 2 - keepCentre.fy * box.h * k };
   }
   keepCentre = null;
+  pinnedK = null;
+  const anchored = anchorSelect;
+  anchorSelect = false;
   api = mountViewport(svg, svg.querySelector("#sys-vp"), {
-    view: auto || !view ? openingView(box, size, inset) : view, box: box, taps: taps, fit: false,
+    view: (auto && !anchored) || !view ? openingView(box, size, inset) : view, box: box, taps: taps, fit: false,
     onTap: (el) => select(el.getAttribute("data-sys")),
     onClear: () => {
       if (selected) select(null);

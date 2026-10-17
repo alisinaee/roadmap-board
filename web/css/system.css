@@ -17,7 +17,7 @@
 .sys-more-m{position:absolute;top:100%;left:0;z-index:var(--z-over);display:grid;gap:2px;min-width:180px;margin-top:2px;padding:var(--sp-1);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-card);box-shadow:var(--shadow-2)}
 .sys-more-m .btn{justify-content:flex-start;text-align:left}
 .sys-zoom{min-width:48px;font-variant-numeric:tabular-nums}
-.sys-panel{position:absolute;top:0;right:0;bottom:0;z-index:5;width:min(400px,100%);overflow:auto;padding:var(--sp-3);background:var(--surface-1);border-left:1px solid var(--track)}
+.sys-panel{position:static;flex:none;width:min(400px,100%);overflow:auto;padding:var(--sp-3);background:var(--surface-1);border-left:1px solid var(--track)}
 .sys-panel h3{margin:var(--sp-2) 0 0;font-size:var(--fs-12)}
 .sys-panel .row-grid{min-height:0;padding:2px 0}
 .sys-panel .btn{text-align:left}
@@ -36,7 +36,8 @@
 .sys-crumb{color:var(--text-1);font-weight:600}
 .sys-lbl-bg{fill:var(--surface-1);stroke:var(--line);stroke-width:1}
 .sys-lbl{fill:var(--text-2);font-size:11px;text-anchor:middle}
-.sys-box{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+.sys-row{display:flex;flex:1;min-height:0;min-width:0}
+.sys-box{position:relative;flex:1;min-height:0;min-width:0;display:flex;flex-direction:column}
 .sys-ov{position:absolute;z-index:4;display:inline-flex;align-items:center;gap:var(--sp-2);padding:var(--sp-1) var(--sp-2);background:var(--surface-1);border:1px solid var(--line);border-radius:var(--r-card);white-space:nowrap}
 .sys-ov-tr{top:var(--sp-2);right:var(--sp-2)}
 .sys-ov-tl{top:var(--sp-2);left:var(--sp-2)}

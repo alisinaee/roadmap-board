@@ -128,7 +128,10 @@ class SystemViewTest(unittest.TestCase):
         self.assertRegex(css, r"\.sys\{[^}]*height:100%[^}]*min-height:0")
         self.assertRegex(css, r"\.sys-canvas\{flex:1;min-height:0")
         self.assertRegex(css, r"\.sys-canvas>\.wfg-svg\{[^}]*height:100%")
-        self.assertRegex(css, r"\.sys-panel\{position:absolute;top:0;right:0;bottom:0;[^}]*width:min\(400px,100%\)[^}]*overflow:auto")
+        # R11.152: the panel docks as a real flex child of .sys-row beside .sys-box, not an absolute overlay on top of it.
+        self.assertRegex(css, r"\.sys-row\{display:flex;flex:1;min-height:0")
+        self.assertRegex(css, r"\.sys-box\{position:relative;flex:1;min-height:0;min-width:0")
+        self.assertRegex(css, r"\.sys-panel\{position:static;flex:none;width:min\(400px,100%\)[^}]*overflow:auto")
         for cls in (".sys-menu{", ".sys-menu-h{", ".sys-menu-i{", ".sys-menu-sep{", ".sys-menu-list{", ".sys-crumbs{",
                     ".sys-tog{"):
             self.assertIn(cls, css)

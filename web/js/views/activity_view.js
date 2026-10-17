@@ -41,7 +41,6 @@ export function toolbarHtml(st, opts) {
   const live = opts.live ? '<span class="hx-live" title="New events appear on their own">' +
     '<span class="hx-pulse" aria-hidden="true"></span>Live</span>' : "";
   return '<div class="hx-bar">' +
-    '<h2 class="page-title hx-title">Activity</h2>' +
     '<span class="hx-total num" aria-live="polite">' + esc(opts.totalText) + "</span>" + live +
     sectionToolbar({
       key: "activity",

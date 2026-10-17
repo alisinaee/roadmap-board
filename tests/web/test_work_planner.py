@@ -99,7 +99,7 @@ class WorkPlannerTest(unittest.TestCase):
         self.assertIn('data-tb-view="planner"', html)
         self.assertIn('aria-pressed="true" data-tb-view="planner"', html)
         self.assertIn("2 plan items", html)
-        self.assertEqual(html.count('<h2 class="page-title">Work</h2>'), 1)
+        self.assertEqual(html.count('<h2 class="page-title">Work</h2>'), 0)
         self.assertNotIn("planner", out["ids"])
 
     def test_old_planner_routes_redirect_to_work_planner(self):

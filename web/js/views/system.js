@@ -604,8 +604,7 @@ function crumbsHtml() {
 
 function sectionHtml(vm) {
   if (vm.route.name !== "project") {
-    return '<div class="page-head"><h2 class="page-title">System</h2></div>' +
-      emptyHtml("Pick a project to see its system views.");
+    return emptyHtml("Pick a project to see its system views.");
   }
   const pid = vm.route.id;
   const mode = RENDERERS[current] || VIEWS[2];
@@ -613,7 +612,7 @@ function sectionHtml(vm) {
 }
 
 function sysInner(pid, mode) {
-  return '<div class="page-head"><h2 class="page-title">System</h2><p class="page-note">' +
+  return '<div class="page-head"><p class="page-note">' +
     esc(mode[0] === "flows" ? "Sequence diagrams of key flows." : mode[2]) + "</p></div>" +
     bodyHtml(pid, store.get(pid));
 }

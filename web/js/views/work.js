@@ -177,7 +177,7 @@ function headHtml(ctx) {
     views: VIEWS.map(function (v) {
       return { id: v, label: VIEW_LABEL[v], current: ctx.view === v };
     }) });
-  return '<div class="page-head"><h2 class="page-title">Work</h2><p class="page-note">' + esc(note) + "</p></div>" +
+  return '<div class="page-head"><p class="page-note">' + esc(note) + "</p></div>" +
     bar;
 }
 

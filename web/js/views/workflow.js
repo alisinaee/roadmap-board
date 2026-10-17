@@ -1300,7 +1300,7 @@ export function sectionView(vm) {
   model.view = view;
   model.route = route;
   lastModel = model;
-  const head = '<div class="page-head"><h2 class="page-title">Workflow</h2><p class="page-note">Live. ' +
+  const head = '<div class="page-head"><p class="page-note">Live. ' +
     (view === "map" ? "Tasks flow left to right from Start to Now, one frame per phase. Select a task to see its " +
       "details." : "Each bar is a job from start to end, in lanes by role and model. Hover or focus a bar for its " +
       "details, and press Enter to open its task.") + "</p></div>";

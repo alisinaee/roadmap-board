@@ -155,7 +155,7 @@ export function sectionView() {
   // The phone page carries no CSRF value and records nothing, so it has no Logging section.
   const logging = typeof document !== "undefined" && csrfToken() ? loggingHtml() : "";
   if (logging) maybeRefreshLogStatus();
-  return '<div class="page-head"><h2 class="page-title">Settings</h2>' +
+  return '<div class="page-head">' +
     '<p class="page-note">Browser preferences only; projects keep separate settings.</p></div>' +
     '<section class="ov-card" aria-labelledby="set-look"><h3 id="set-look" class="lim-h">Appearance</h3>' +
     '<p class="lim-label">Theme</p>' + choiceHtml("Theme", THEMES, ui.theme, "set-theme") +

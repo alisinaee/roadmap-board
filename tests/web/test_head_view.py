@@ -204,7 +204,7 @@ class HeadCss(unittest.TestCase):
         self.assertRegex(css, r"\.hd-n\{width:1%;")
         self.assertRegex(css, r"\.hd-age\{width:56px;min-width:56px;text-align:right;white-space:nowrap")
         self.assertRegex(css, r"\.hd-when\{width:112px;min-width:112px;[^}]*white-space:nowrap")
-        self.assertRegex(css, r"\.hd-sumc\{width:55%;min-width:150px\}\.hd-rpc\{width:30%")
+        self.assertRegex(css, r"\.hd-sumc\{width:60%;min-width:150px\}\.hd-rpc\{width:34%")
 
     def test_bound_column_shows_a_dash_and_the_list_drops_the_carried_icon(self):
         js = read(SOURCE)

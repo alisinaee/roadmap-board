@@ -44,7 +44,7 @@
 .hd-tbl .hd-hit{display:inline;position:static;width:auto;height:auto;padding:0;margin:0;border:0;background:none;color:inherit;font:inherit;font-variant-numeric:tabular-nums;cursor:pointer}
 .hd-n{width:1%;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 
-.hd-sumc{width:55%;min-width:150px}.hd-rpc{width:30%;min-width:120px}
+.hd-sumc{width:60%;min-width:150px}.hd-rpc{width:34%;min-width:120px}
 .hd-sum2{display:block;margin-top:2px;color:var(--text-3);font-size:var(--fs-12);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hd-rep-inline{display:none}
 .hd-stc>.chip,.hd-kind>.chip:first-child{display:inline-flex;justify-content:center;min-width:76px}

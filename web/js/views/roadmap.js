@@ -190,10 +190,10 @@ function pageHead(vm, snap) {
     " items done · " + left) + "</p>";
   // The Map keeps its head to one row (its legend sits under the diagram), so the diagram gets the height.
   if (view === "map") {
-    return '<div class="page-head rmm-head"><p class="page-title">Roadmap</p>' + note + tabs + "</div>";
+    return '<div class="page-head rmm-head">' + note + tabs + "</div>";
   }
   // The view tabs share the title row, pushed to the right edge (rm-title-row in flow.css).
-  return '<div class="page-head"><div class="rm-title-row"><p class="page-title">Roadmap</p>' + tabs + "</div>" +
+  return '<div class="page-head"><div class="rm-title-row">' + tabs + "</div>" +
     note + "</div>" +
     '<p class="page-note">● done  ◐ in progress  ○ to do  ⏸ on hold  ▶ doing = a job is running. ' +
     "Done tasks are not listed.</p>";

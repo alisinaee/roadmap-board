@@ -10,7 +10,10 @@
 .ib-item{border-top:1px solid var(--line)}
 .ib-item:first-child{border-top:0}
 .is-old .ib-row{opacity:.7}
-.ib-row.row-grid{grid-template-columns:84px minmax(0,1fr) auto 3rem 28px 28px;column-gap:12px;padding:8px 0;align-items:center}
+/* Rows follow the Head list's own grid language (web/css/head.css .hd-row): fixed tracks for kind/age/actions,
+   same padding, radius and hover highlight across the full row, so Inbox and Head read as one table style. */
+.ib-row.row-grid{grid-template-columns:84px minmax(0,1fr) auto 3rem 28px 28px;column-gap:var(--sp-2);row-gap:2px;padding:var(--sp-2);border-radius:var(--r-card);align-items:center}
+.ib-row:hover,.is-open>.ib-row{background:var(--surface-2)}
 .ib-kind{min-width:0;overflow:hidden}
 .ib-row>.ib-main{min-width:0;overflow:hidden;white-space:nowrap;cursor:pointer;border-radius:var(--r-control)}
 .ib-row .rg-t{display:block;overflow:hidden;text-overflow:ellipsis}
@@ -22,7 +25,7 @@
 .ib-expand{transition:transform .15s ease}
 .ib-item.is-open .ib-expand { transform: rotate(90deg) }
 @media (prefers-reduced-motion: reduce) { .ib-expand { transition: none } }
-.ib-body{display:grid;gap:8px;justify-items:start;min-width:0;padding:0 0 12px 96px}
+.ib-body{display:grid;gap:8px;justify-items:start;min-width:0;padding:0 var(--sp-2) var(--sp-4) 96px}
 .ib-body p{margin:0}
 .ib-body .qc-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px }
 .ib-st{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font-variant-numeric:tabular-nums}

@@ -5,7 +5,6 @@
 .page-title { margin: 0; font-size: var(--fs-17) }
 .page-note, .ov-sum, .ov-more { margin: 0; color: var(--text-3); font-size: var(--fs-12) }
 .ov { display: grid; gap: var(--sp-4); min-width: 0 }
-/* the limit banner sits above .ov (not inside it), so .banner + .banner never reaches the status banner below */
 .banner + .ov { margin-top: var(--sp-2) }
 .ov-main, .ov-side, .grp, .ov-card { display: grid; gap: var(--sp-3); min-width: 0; align-content: start }
 .ov .kpi-row { grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)) }

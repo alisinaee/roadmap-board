@@ -670,21 +670,25 @@ function select(id) {
   }
   // Opening or closing the side panel can shrink the canvas; anchor on the tapped node (or, when clearing, on the
   // current view centre) so the redraw below never leaves it hidden under the panel or re-fit somewhere else.
-  if (!switched) anchorSelection(selected, a);
+  if (!switched) anchorSelection(selected);
   if (typeof document !== "undefined" && lastVm) {
     document.dispatchEvent(new CustomEvent("system:select", { detail: { pid: lastVm.route.id, id: selected } }));
   }
   redraw();
 }
 
-function anchorSelection(id, a) {
+function anchorSelection(id) {
   const svg = typeof document !== "undefined" ? svgEl() : null;
   if (!svg || !svg.getBoundingClientRect) return;
   const w = Number(svg.getAttribute("data-w")) || 1;
   const h = Number(svg.getAttribute("data-h")) || 1;
   const r = svg.getBoundingClientRect();
   if (!r.width || !r.height) return;
-  const node = id && a && current !== "flows" ? viewOf(a, current).nodes.find((n) => n.id === id) : null;
+  // lastLay (not viewOf's raw arch data, which carries no x/y/w/h) holds the positions actually on screen right now,
+  // from the last layout pass (R11.152 follow-up: switching from node A straight to node B was reading undefined
+  // x/y off the unlaid-out arch node and anchoring on NaN, which the viewport then treated as "no view", falling
+  // back to the auto-fit transform — the 218%-to-100% jump).
+  const node = id && lastLay && current !== "flows" ? lastLay.nodes.find((n) => n.id === id) : null;
   if (node) {
     keepCentre = { fx: (node.x + node.w / 2) / w, fy: (node.y + node.h / 2) / h };
   } else if (view) {
